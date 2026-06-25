@@ -6,6 +6,8 @@ app.set("view engine","ejs");
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 
+
+
 app.use(express.static(path.join(__dirname,"public")));
 app.get("/",function(req,res){
     fs.readdir(`./files`,function(err,files){
@@ -19,11 +21,42 @@ app.get("/file/:filename",function(req,res){
     })
     
 })
+app.get("/edit/:filename",function(req,res){
+    res.render('edit',{filename:req.params.filename});
+    
+})
 
 app.post('/create',function(req,res){
     fs.writeFile(`./files/${req.body.title.split(' ').join(' ')}.txt`,req.body.details,function(err){
          res.redirect('/');
     });
 })
+app.post('/edit',function(req,res){
+    fs.rename(`./files/${req.body.previous}`,`./files/${req.body.new}`,function(err){
+        res.redirect("/");
+    })
+    });
+
+
+const userModel = require('./usermodel');
+app.get('/create',async(req,res)=>{
+    let createduser = await userModel.create({
+        name: "harshita",
+        email:"harsh@gmail.com",
+        username:"harshiii"
+    })
+
+    res.send(createduser);
+})
+app.get('/update',async(req,res)=>{
+    let updateduser = await userModel.findOneAndUpdate({username:"harshuu"},{name:"harsh verma"},{new:true})
+    res.send(updateduser)
+})
+
+app.get("/read", async(req,res)=>{
+    let users = await userModel.find();
+    res.send(users);
+})
+
 
 app.listen(3000);
